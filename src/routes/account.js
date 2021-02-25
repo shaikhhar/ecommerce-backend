@@ -64,7 +64,6 @@ router.post("/login", (req, res, next) => {
           .status(404)
           .json({ success: false, message: "Auth failed e" });
       }
-      console.log(user[0].email);
       var isValid = bcrypt.compareSync(req.body.password, user[0].password);
       if (isValid) {
         const token = jwt.sign({ user: user[0] }, process.env.JWT_SECRET, {
@@ -99,35 +98,36 @@ router
         res.status(500).json({ success: false, message: err });
       });
   })
-  .patch(checkJWT, (req, res, next) => {
-    User.findOne({ _id: req.decoded.user._id })
-      .exec()
-      .then((result) => {
-        const bodyFieldsAndValues = req.body;
-        const updateFields = {};
-        for (doc of bodyFieldsAndValues) {
-          if (updateFileds[doc.propName] === "password") {
-            updateFileds[doc.propName] = hashPassword(doc.value);
-          }
-          updateFields[doc.propName] = doc.value;
+  .post(checkJWT, async (req, res, next) => {
+    const updates = Object.keys(req.body);
+    const allowedUpdates = ["name", "password"];
+    const isValidOperation = updates.every((update) =>
+      allowedUpdates.includes(update)
+    );
+    if (!isValidOperation) {
+      res.status(400).json({ success: false, message: "invalid field" });
+    }
+    try {
+      const user = await User.findById(req.decoded.user._id);
+      if (!user) {
+        res.status(404).json({ success: false, message: "invalid user" });
+      }
+      updates.forEach((update) => {
+        if (update === "password") {
+          pwHashed = hashPassword(req.body.password);
+          user.password = pwHashed;
         }
-        User.update({ _id: result._id }, { $set: updateFields })
-          .exec()
-          .then(() => {
-            User.findById(result._id)
-              .exec()
-              .then((updatedProf) => {
-                res.json({
-                  success: true,
-                  message: "Profile updated",
-                  updatedProfile: updatedProf,
-                });
-              });
-          });
-      })
-      .catch((err) => {
-        res.json({ success: false, message: err });
+        user[update] = req.body[update];
       });
+      const updatedUser = await user.save();
+      res.json({
+        success: true,
+        message: "profile updated",
+        user: updatedUser,
+      });
+    } catch (error) {
+      res.json({ success: false, message: error.message });
+    }
   });
 
 // address api
