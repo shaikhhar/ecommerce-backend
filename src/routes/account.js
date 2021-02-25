@@ -113,19 +113,13 @@ router
         res.status(404).json({ success: false, message: "invalid user" });
       }
       updates.forEach((update) => {
-        console.log("update ", update);
         if (update === "password") {
-          console.log("updating pw...");
           pwHashed = hashPassword(req.body.password);
-          console.log("pwH", pwHashed);
           user.password = pwHashed;
-          console.log("user after pw updated", user);
         } else {
           user[update] = req.body[update];
         }
-        console.log(update, req.body[update]);
       });
-      console.log("updatedUser ", user);
 
       const updatedUser = await user.save();
 
@@ -160,12 +154,16 @@ router
     User.findOne({ _id: req.decoded.user._id })
       .exec()
       .then((user) => {
-        if (req.body.addr1) user.address.addr1 = req.body.addr1;
-        if (req.body.addr2) user.address.addr2 = req.body.addr2;
-        if (req.body.city) user.address.city = req.body.city;
-        if (req.body.state) user.address.state = req.body.state;
-        if (req.body.country) user.address.country = req.body.country;
-        if (req.body.postalCode) user.address.postalCode = req.body.postalCode;
+        const updates = Object.keys(req.body);
+        updates.forEach((update) => {
+          user.address[update] = req.body[update];
+        });
+        // if (req.body.addr1) user.address.addr1 = req.body.addr1;
+        // if (req.body.addr2) user.address.addr2 = req.body.addr2;
+        // if (req.body.city) user.address.city = req.body.city;
+        // if (req.body.state) user.address.state = req.body.state;
+        // if (req.body.country) user.address.country = req.body.country;
+        // if (req.body.postalCode) user.address.postalCode = req.body.postalCode;
 
         user.save();
         res.json({ success: true, message: "address updated" });
