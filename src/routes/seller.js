@@ -5,9 +5,11 @@ const multer = require("multer");
 
 const checkJWT = require("../middlewares/check-jwt");
 
+fileDest = path.join(__dirname, "../../uploads");
+
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "./uploads");
+    cb(null, fileDest);
   },
   filename: (req, file, cb) => {
     cb(
@@ -42,10 +44,16 @@ router
     product.category = req.body.categoryId;
     product.title = req.body.title;
     product.price = req.body.price;
-    product.description = req.body.description;
-    product.image = "http://localhost:3030/" + req.file.path;
-    product.save().then(() => {
-      res.json({ success: true, message: "Succesfully added the product" });
+    product.description = req.body.description || "";
+    if (req.file)
+      product.image =
+        `http://localhost:${process.env.PORT}/uploads/` + req.file.filename;
+    product.save().then((prod) => {
+      res.json({
+        success: true,
+        message: "Succesfully added the product",
+        product: prod,
+      });
     });
   });
 

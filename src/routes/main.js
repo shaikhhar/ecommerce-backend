@@ -33,14 +33,14 @@ router
   });
 
 router.get("/categories/:id", (req, res, next) => {
-  const perPage = 10;
-  const page = req.query.page;
+  const perPage = +req.query["per-page"] || 10;
+  const page = +req.query.page;
 
   Product.countDocuments({ category: req.params.id })
     .then((count) => {
       var totalProducts = count;
       Product.find({ category: req.params.id })
-        .skip(perPage * page)
+        .skip(perPage * (page - 1))
         .limit(perPage)
         .populate("category owner review")
         .exec()
@@ -64,14 +64,14 @@ router.get("/categories/:id", (req, res, next) => {
     });
 });
 router.get("/products", (req, res, next) => {
-  const perPage = 20;
+  const perPage = +req.query["per-page"] || 10;
   const page = req.query.page;
 
   Product.countDocuments()
     .then((count) => {
       var totalProducts = count;
       Product.find({})
-        .skip(perPage * page)
+        .skip(perPage * (page - 1))
         .limit(perPage)
         .populate("category owner")
         .exec()
@@ -90,7 +90,7 @@ router.get("/products", (req, res, next) => {
     });
 });
 
-router.get("/product/:id", (req, res, next) => {
+router.get("/products/:id", (req, res, next) => {
   Product.findById({ _id: req.params.id })
     .populate("category owner")
     .populate({ path: "reviews", populate: { path: "owner" } })
@@ -119,7 +119,7 @@ router.post("/review", checkJWT, (req, res, next) => {
 
         if (req.body.title) review.title = req.body.title;
         if (req.body.description) review.description = req.body.description;
-        review.rating = req.body.rating;
+        if (req.body.rating) review.rating = req.body.rating;
         product.reviews.push(review._id);
         product.save();
         review.save();
