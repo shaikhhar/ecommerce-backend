@@ -98,7 +98,7 @@ router
         res.status(500).json({ success: false, message: err });
       });
   })
-  .post(checkJWT, async (req, res, next) => {
+  .patch(checkJWT, async (req, res, next) => {
     const updates = Object.keys(req.body);
     const allowedUpdates = ["name", "password"];
     const isValidOperation = updates.every((update) =>
@@ -113,13 +113,22 @@ router
         res.status(404).json({ success: false, message: "invalid user" });
       }
       updates.forEach((update) => {
+        console.log("update ", update);
         if (update === "password") {
+          console.log("updating pw...");
           pwHashed = hashPassword(req.body.password);
+          console.log("pwH", pwHashed);
           user.password = pwHashed;
+          console.log("user after pw updated", user);
+        } else {
+          user[update] = req.body[update];
         }
-        user[update] = req.body[update];
+        console.log(update, req.body[update]);
       });
+      console.log("updatedUser ", user);
+
       const updatedUser = await user.save();
+
       res.json({
         success: true,
         message: "profile updated",
@@ -167,7 +176,7 @@ router
   });
 
 function hashPassword(password) {
-  return bcrypt.hashSync(password, null);
+  return bcrypt.hashSync(password, 8);
 }
 
 module.exports = router;
