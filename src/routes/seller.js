@@ -46,8 +46,10 @@ router
     product.price = req.body.price;
     product.description = req.body.description || "";
     if (req.file)
+      // if localhost http://localhost:${process.env.PORT}
+
       product.image =
-        `http://localhost:${process.env.PORT}/uploads/` + req.file.filename;
+        `https://ecommerce-shekhar.herokuapp.com/uploads/` + req.file.filename;
     product.save().then((prod) => {
       res.json({
         success: true,
