@@ -32,13 +32,18 @@ router
 
       product.image =
         `https://ecommerce-shekhar.herokuapp.com/uploads/` + req.file.filename;
-    product.save().then((prod) => {
-      res.json({
-        success: true,
-        message: "Succesfully added the product",
-        product: prod,
+    product
+      .save()
+      .then((prod) => {
+        res.json({
+          success: true,
+          message: "Succesfully added the product",
+          product: prod,
+        });
+      })
+      .catch((err) => {
+        res.json({ success: false, message: err.message });
       });
-    });
   });
 
 module.exports = router;
