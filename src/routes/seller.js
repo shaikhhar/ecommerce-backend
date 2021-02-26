@@ -1,28 +1,8 @@
 const router = require("express").Router();
 const Product = require("../models/product");
-const path = require("path");
-const multer = require("multer");
-
 const checkJWT = require("../middlewares/check-jwt");
 
-fileDest = path.join(__dirname, "../../uploads");
-
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, fileDest);
-  },
-  filename: (req, file, cb) => {
-    cb(
-      null,
-      file.fieldname + "-" + Date.now() + path.extname(file.originalname)
-    );
-  },
-});
-
-const upload = multer({
-  storage: storage,
-  limits: { fileSize: 1024 * 1024 * 5 },
-});
+const upload = require("./image-uploader");
 
 router
   .route("/products")
@@ -40,6 +20,7 @@ router
   })
   .post(checkJWT, upload.single("product_picture"), (req, res, next) => {
     let product = new Product();
+    console.log("product ", req.body);
     product.owner = req.decoded.user._id;
     product.category = req.body.categoryId;
     product.brand = req.body.brandId;
