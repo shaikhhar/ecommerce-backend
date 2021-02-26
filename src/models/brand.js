@@ -6,4 +6,4 @@ const BrandSchema = new Schema({
   created: { type: Date, default: Date.now },
 });
 
-module.exports = mongoose.model("Category", BrandSchema);
+module.exports = mongoose.model("Brand", BrandSchema);

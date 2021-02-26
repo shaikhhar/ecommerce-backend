@@ -39,6 +39,13 @@ const UserSchema = new Schema({
   created: { type: Date, default: Date.now },
 });
 
+UserSchema.methods.toJSON = function () {
+  const user = this;
+  const userObject = user.toObject();
+  delete userObject.password;
+  return userObject;
+};
+
 UserSchema.pre("save", async function (next) {
   var user = this;
 

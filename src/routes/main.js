@@ -3,33 +3,48 @@ const jwt = require("jsonwebtoken");
 const Category = require("../models/category");
 const Product = require("../models/product");
 const Review = require("../models/review");
+const Brand = require("../models/brand");
 
 const checkJWT = require("../middlewares/check-jwt");
 
 router
   .route("/categories")
-  .get((req, res, next) => {
-    Category.find({})
-      .exec()
-      .then((Allcategories) => {
-        res.status(200).json({ success: true, categories: Allcategories });
-      })
-      .catch((err) => {
-        res.json({ success: false, message: err.message });
-      });
+  .get(async (req, res, next) => {
+    try {
+      const allCategories = await Category.find({});
+      res.status(200).json({ success: true, categories: allCategories });
+    } catch (error) {
+      res.json({ success: false, message: error.message });
+    }
   })
-  .post((req, res, next) => {
-    let category = new Category({
-      name: req.body.name,
-    });
-    category
-      .save()
-      .then((result) => {
-        res.status(201).json({ success: true, message: "Category added" });
-      })
-      .catch((err) => {
-        res.json({ success: false, message: err });
-      });
+  .post(async (req, res, next) => {
+    try {
+      let category = new Category(req.body).save();
+      res
+        .status(201)
+        .json({ success: true, message: "Category added", category });
+    } catch (error) {
+      res.json({ success: false, message: error.message });
+    }
+  });
+
+router
+  .route("/brands")
+  .get(async (req, res) => {
+    try {
+      const brands = await Brand.find({});
+      res.status(200).json({ success: true, brands });
+    } catch (error) {
+      res.status(404).json({ success: false, message: error.message });
+    }
+  })
+  .post(async (req, res) => {
+    try {
+      let brand = await new Brand(req.body).save();
+      res.status(201).json({ success: true, message: "Brand added", brand });
+    } catch (error) {
+      res.status(404).json({ success: false, message: error.message });
+    }
   });
 
 router.get("/categories/:id", (req, res, next) => {
