@@ -19,7 +19,7 @@ router
   })
   .post(async (req, res, next) => {
     try {
-      let category = new Category(req.body).save();
+      let category = await new Category(req.body).save();
       res
         .status(201)
         .json({ success: true, message: "Category added", category });
@@ -88,12 +88,12 @@ router.get("/products", (req, res, next) => {
       Product.find({})
         .skip(perPage * (page - 1))
         .limit(perPage)
-        .populate("category owner")
+        .populate("category owner brand")
         .exec()
         .then((products) => {
           res.json({
             success: true,
-            message: "category",
+            message: "Products",
             products: products,
             totalProducts: totalProducts,
             pages: Math.ceil(totalProducts / perPage),
@@ -107,7 +107,7 @@ router.get("/products", (req, res, next) => {
 
 router.get("/products/:id", (req, res, next) => {
   Product.findById({ _id: req.params.id })
-    .populate("category owner")
+    .populate("category owner brand")
     .populate({ path: "reviews", populate: { path: "owner" } })
     .exec()
     .then((product) => {

@@ -28,7 +28,7 @@ router
   .route("/products")
   .get(checkJWT, (req, res, next) => {
     Product.find({ owner: req.decoded.user._id })
-      .populate("owner category")
+      .populate("owner brand category")
       .exec()
       .then((products) => {
         res.json({
@@ -42,6 +42,7 @@ router
     let product = new Product();
     product.owner = req.decoded.user._id;
     product.category = req.body.categoryId;
+    product.brand = req.body.brandId;
     product.title = req.body.title;
     product.price = req.body.price;
     product.description = req.body.description || "";
