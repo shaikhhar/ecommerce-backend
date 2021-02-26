@@ -4,57 +4,33 @@ const bcrypt = require("bcryptjs");
 const User = require("../models/user");
 const checkJWT = require("../middlewares/check-jwt");
 
-router.post("/signup", (req, res, next) => {
-  User.findOne({ email: req.body.email })
-    .exec()
-    .then((result) => {
-      if (result) {
-        res.status(409).json({
-          success: false,
-          message: "user with the email already exist",
-        });
-      } else {
-        bcrypt.hash(req.body.password, 8, (err, hash) => {
-          if (err) {
-            return res
-              .status(409)
-              .json({ success: false, message: "Signup failed" });
-          } else {
-            const user = new User({
-              name: req.body.name,
-              email: req.body.email,
-              password: hash,
-              isSeller: req.body.isSeller,
-            });
-            user
-              .save()
-              .then(() => {
-                user["token"] = jwt.sign(
-                  { user: user },
-                  process.env.JWT_SECRET,
-                  {
-                    expiresIn: "2h",
-                  }
-                );
-                res.status(201).json({
-                  success: true,
-                  message: user.name + " is created",
-                  token: user.token,
-                });
-              })
-              .catch((err) => {
-                res
-                  .status(500)
-                  .json({ success: false, message: "Signup failed" });
-              });
-          }
-        });
-      }
-    })
-    .catch((err) => {
-      res.json({ message: err });
+router.post("/signup", async (req, res, next) => {
+  try {
+    const userExists = await User.findOne({ email: req.body.email });
+    if (userExists) {
+      res.status(409).json({
+        success: false,
+        message: "user with the email already exist",
+      });
+    }
+    const user = new User(req.body);
+    await user.save();
+    user["token"] = jwt.sign(
+      {
+        user: user,
+      },
+      process.env.JWT_SECRET
+    );
+    res.status(201).json({
+      success: true,
+      message: user.name + " is created",
+      token: user.token,
     });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Signup failed" });
+  }
 });
+
 router.post("/login", (req, res, next) => {
   User.find({ email: req.body.email })
     .exec()
@@ -113,10 +89,7 @@ router
         res.status(404).json({ success: false, message: "invalid user" });
       }
       updates.forEach((update) => {
-        if (update === "password") {
-          pwHashed = hashPassword(req.body.password);
-          user.password = pwHashed;
-        } else {
+        {
           user[update] = req.body[update];
         }
       });

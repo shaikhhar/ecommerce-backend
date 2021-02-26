@@ -39,16 +39,15 @@ const UserSchema = new Schema({
   created: { type: Date, default: Date.now },
 });
 
-// UserSchema.pre('save', (next)=>{
-//     var user = this;
+UserSchema.pre("save", async function (next) {
+  var user = this;
 
-//     bcrypt.hash(user.password, null,null,(err, hash)=>{
-//         if(err) return next(err);
+  if (user.isModified("password")) {
+    user.password = await bcrypt.hash(user.password, 8);
+  }
 
-//         user.password = hash;
-//         next();
-//     });
-// });
+  next();
+});
 
 // UserSchema.methods.comparePassword = password=>{
 //     return bcrypt.compareSync(password, this.password );

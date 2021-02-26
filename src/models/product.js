@@ -4,6 +4,7 @@ const Schema = mongoose.Schema;
 const ProductSchema = new Schema(
   {
     category: { type: Schema.Types.ObjectId, ref: "Category" },
+    brand: { type: Schema.Types.ObjectId, ref: "Brand" },
     owner: { type: Schema.Types.ObjectId, ref: "User" },
     reviews: [{ type: Schema.Types.ObjectId, ref: "Review" }],
     image: String,
