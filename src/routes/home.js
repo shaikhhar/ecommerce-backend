@@ -19,7 +19,8 @@ router.post("/banner", upload.single("image"), async (req, res) => {
     if (existingBanner) {
       if (req.file)
         existingBanner.image =
-          `https://localhost:${process.env.PORT}/uploads/` + req.file.filename;
+          `https://ecommerce-shekhar.herokuapp.com/uploads/` +
+          req.file.filename;
       Object.keys(req.body).forEach((update) => {
         existingBanner[update] = req.body[update];
       });
@@ -37,7 +38,8 @@ router.post("/banner", upload.single("image"), async (req, res) => {
       banner.position = position;
       if (req.file)
         banner.image =
-          `https://ecommerce-shekhar.herokuapp.com/home/` + req.file.filename;
+          `https://ecommerce-shekhar.herokuapp.com/uploads/` +
+          req.file.filename;
       const bannerRes = await banner.save();
       const bannerArray = await Banner.find().populate("referenceId");
       const sliderArray = await Slider.find().populate("referenceId");
